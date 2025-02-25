@@ -1,178 +1,83 @@
-# BINARIC Project Roadmap
 
-## Overview
-BINARIC is a modular audio-based data transfer system designed to facilitate efficient, structured communication between nearby devices using sound. The system consists of multiple components, each handling a specific role within the network, ensuring seamless data transmission, reception, and management.
+## Helper Scripts and Their Functions
+The BINARIC system utilizes several helper scripts that provide core functionality supporting the main scripts. These helper functions are interwoven across multiple components to ensure efficient processing and modularity.
 
-## Project Structure
-```
-BINARIC/
-│── binaric/
-│   │── __init__.py
-│   │── core/
-│   │   │── binaric_stream.py
-│   │   │── binaric_file.py
-│   │   │── modulation.py
-│   │   │── error_correction.py
-│   │   │── handshake.py
-│   │   │── packet_manager.py
-│   │── scripts/
-│   │   │── uploader.py
-│   │   │── downloader.py
-│   │   │── stream_node.py
-│   │   │── wav_generator.py
-│   │── utils/
-│   │   │── audio_processing.py
-│   │   │── config.py
-│   │   │── logger.py
-│── tests/
-│── docs/
-│── ROADMAP.md
-│── README.md
-```
+### **1. `audio_processing.py`**
+**Purpose:** Handles all audio input/output operations, ensuring clear signal processing and filtering.
 
-## Core Modules
-These modules handle the core functionalities of BINARIC and are designed to be reusable across different scripts.
+**Functions:**
+- `record_audio(duration)`: Captures audio input from the microphone for a specified duration.
+- `filter_noise(audio_signal)`: Applies noise reduction techniques to enhance audio clarity.
+- `extract_frequencies(audio_signal)`: Identifies frequency patterns in an incoming signal.
+- `synthesize_audio(data, modulation_scheme)`: Converts binary data into modulated audio signals.
 
-### 1. `binaric_stream.py`
-- Manages BINARIC instances and keeps track of active connections.
-- Handles message queuing, request caching, and real-time data synchronization.
-- Supports both real-time and stored file transmission.
+**Used in:**
+- `downloader.py` (extracting received audio signals)
+- `dynamic_instance.py` (real-time audio input/output processing)
+- `static_generator.py` (converting files to audio for transmission)
 
-### 2. `binaric_file.py`
-- Defines a BINARIC file object that encapsulates a request/query.
-- Includes a **header**, **content**, and **footer**.
-- Supports streaming to files and conversion into `.wav` format for offline transmission.
-- Provides methods for reading and writing BINARIC files efficiently.
+### **2. `config.py`**
+**Purpose:** Stores all configuration settings, allowing easy tuning of BINARIC parameters.
 
-#### **Schema of BINARIC File Object**
-```json
-{
-  "header": {
-    "file_id": "unique_id",
-    "file_type": "data/query",
-    "timestamp": "ISO-8601",
-    "checksum": "hash"
-  },
-  "content": "base64_encoded_data",
-  "footer": {
-    "signature": "optional_digital_signature",
-    "end_flag": true
-  }
-}
-```
+**Functions:**
+- `get_modulation_scheme()`: Retrieves the current modulation type (FSK, PSK, etc.).
+- `set_modulation_scheme(scheme)`: Adjusts the modulation type dynamically.
+- `get_error_correction_level()`: Fetches the selected error correction setting.
+- `set_error_correction_level(level)`: Updates the error correction parameters.
 
-### 3. `modulation.py`
-- Implements Frequency Shift Keying (FSK), Phase Shift Keying (PSK), and Quadrature Amplitude Modulation (QAM) for encoding data into sound.
-- Ensures efficient conversion of binary data into sound waves.
+**Used in:**
+- `handshake.py` (negotiating protocol parameters)
+- `modulation.py` (adjusting encoding/decoding methods)
 
-### 4. `error_correction.py`
-- Implements error detection and correction mechanisms such as CRC and Reed-Solomon codes.
-- Ensures data integrity across transmissions.
+### **3. `logger.py`**
+**Purpose:** Provides logging and debugging functionalities across all BINARIC processes.
 
-### 5. `handshake.py`
-- Manages initial communication between BINARIC instances.
-- Negotiates transmission parameters such as modulation type, error correction level, and transmission speed.
+**Functions:**
+- `log_event(event_message)`: Records system events for debugging.
+- `log_error(error_message)`: Stores errors with timestamps for analysis.
+- `retrieve_logs(log_type)`: Fetches logs for review.
 
-### 6. `packet_manager.py`
-- Splits files into transmission-ready packets.
-- Adds necessary headers, sequence numbers, and error-checking bits.
-- Reassembles received packets into the original file.
+**Used in:**
+- `dynamic_instance.py` (monitoring real-time communication activity)
+- `handshake.py` (logging handshake attempts and failures)
+- `packet_manager.py` (tracking file fragmentation and reassembly issues)
 
-## Scripts
-These scripts utilize the core modules to perform specific tasks.
+### **4. `packet_manager.py`**
+**Purpose:** Manages packetized file transfers, ensuring correct sequencing and integrity.
 
-### 1. `uploader.py`
-**Functionality:**
-- Uses a microphone to detect nearby BINARIC instances.
-- Establishes a connection and transmits a selected file.
-- Terminates the session after successful file transfer.
+**Functions:**
+- `fragment_file(file_path)`: Splits a file into transmission-ready packets.
+- `assemble_file(packets)`: Reconstructs a file from received packets.
+- `add_packet_metadata(packet)`: Adds sequence numbers and checksums.
+- `verify_packet_integrity(packet)`: Validates data integrity before reassembly.
 
-**Inputs:**
-- File to be sent.
-- Transmission mode (real-time or pre-recorded).
+**Used in:**
+- `downloader.py` (assembling received files)
+- `static_generator.py` (fragmenting files before encoding)
+- `binaric_file.py` (managing structured file formats)
 
-**Outputs:**
-- Transmission confirmation.
-- Error log in case of failure.
+### **5. `error_correction.py`**
+**Purpose:** Ensures data integrity by applying error detection and correction methods.
 
-### 2. `downloader.py`
-**Functionality:**
-- Listens for incoming BINARIC file transfers.
-- Automatically downloads and reassembles files sent to the device.
-- Saves received files to a specified directory.
+**Functions:**
+- `apply_crc(data)`: Generates a CRC checksum for error detection.
+- `verify_crc(data, checksum)`: Compares checksums to identify corruption.
+- `apply_reed_solomon(data)`: Implements Reed-Solomon error correction.
+- `correct_errors(data)`: Attempts to recover corrupted data.
 
-**Inputs:**
-- Active listening mode enabled.
+**Used in:**
+- `modulation.py` (integrating error correction into data encoding)
+- `packet_manager.py` (validating data packets before transmission)
+- `dynamic_instance.py` (handling noisy communication environments)
 
-**Outputs:**
-- Received file stored on disk.
-- Metadata logs.
+### **Interweaving Logic Across Modules**
+The helper functions are designed to work seamlessly together to ensure a robust BINARIC system:
+1. **Audio processing** captures and filters signals (`audio_processing.py`).
+2. **Handshaking and negotiation** extract transfer parameters (`handshake.py`).
+3. **Packet management** fragments and reassembles data (`packet_manager.py`).
+4. **Error correction** maintains data integrity (`error_correction.py`).
+5. **Logging and debugging** track system activity (`logger.py`).
+6. **Configuration management** ensures adaptability (`config.py`).
 
-### 3. `stream_node.py`
-**Functionality:**
-- Acts as a persistent BINARIC relay node.
-- Maintains active connections with multiple instances, handling both uploads and downloads.
-- Caches ongoing transfers and optimizes bandwidth usage.
-
-**Inputs:**
-- List of active BINARIC connections.
-
-**Outputs:**
-- Continuous data exchange between nodes.
-- Connection stability metrics.
-
-### 4. `wav_generator.py`
-**Functionality:**
-- Generates BINARIC `.wav` files for pre-programmed audio data transfers.
-- Can encode a file’s binary data into an audio file for offline transmission.
-- Includes metadata headers to specify transmission mode and error correction settings.
-- Supports generating non-interactive BINARIC audio that does not require real-time negotiation.
-
-**Inputs:**
-- File to be converted.
-- Modulation and error correction settings.
-
-**Outputs:**
-- `.wav` file ready for playback.
-
-## Utility Modules
-Helper functions that support the core functionalities and scripts.
-
-### 1. `audio_processing.py`
-- Handles audio input/output.
-- Converts microphone recordings into digital signals.
-- Performs real-time audio filtering and noise reduction.
-
-### 2. `config.py`
-- Stores global configuration settings.
-- Defines modulation schemes, error correction parameters, and session timeouts.
-
-### 3. `logger.py`
-- Handles logging and debugging.
-- Records session data, errors, and performance metrics.
-
-## High-Level Functionalities
-### **File Upload & Download**
-- The uploader detects nearby BINARIC instances and transmits files using modulation and error correction.
-- The downloader listens for transmissions and reassembles received files.
-
-### **Streaming Data**
-- The BINARIC stream node manages active connections and ensures smooth data exchange.
-- Real-time streaming between multiple BINARIC nodes.
-
-### **Audio File Generation**
-- The wav generator produces pre-encoded BINARIC audio files for offline transfers.
-
-### **Microphone-Based Communication**
-- The system supports direct transmission via speakers and reception via microphones.
-- Enables ad-hoc file sharing without requiring internet or traditional networks.
-
-## Future Enhancements
-- **Adaptive Modulation:** Implement dynamic switching between modulation schemes based on signal quality.
-- **Encryption Layer:** Secure file transfers using lightweight encryption.
-- **Mobile App Integration:** Create a mobile-friendly interface for BINARIC-based communication.
-- **Compression Mechanism:** Improve data transmission efficiency using audio-optimized compression.
-
-## Conclusion
-This roadmap outlines the structured implementation of BINARIC, ensuring modularity, scalability, and robust performance for audio-based data communication. The combination of core functionalities, flexible scripting, and utility modules provides a solid foundation for real-world deployment and future expansion.
+This modular structure allows flexibility and optimization, ensuring BINARIC operates efficiently in both static and dynamic transmission environments.
 

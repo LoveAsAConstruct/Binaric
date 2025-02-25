@@ -89,7 +89,7 @@ def write_wav(filename, data, sample_rate=44100):
 # and writes out a WAV file with the Manchester-encoded clock signal.
 def encode_binaric_file_to_wav(binaric_file, clock_speed, freq_config, output_filename, sample_rate=44100):
     # Durations (in seconds) for the segments.
-    symbol_duration = 0.1  # Duration per symbol for header, content, footer segments
+    symbol_duration = 1/clock_speed  # Duration per symbol for header, content, footer segments
     
     # --- Header, Content, Footer Segments ---
     # Convert text fields to bit strings.
@@ -135,15 +135,16 @@ def load_freq_config(json_file):
 if __name__ == "__main__":
     # Create a sample BinaricFile object.
     bin_file = BinaricFile(
-        header="HEADER: file metadata",
-        payload="PAYLOAD: This is the main content of the binaric transmission.",
-        footer="FOOTER: end of transmission"
+        header="HEADER: Integrity Test 1234567890",
+        payload="PAYLOAD: 0123456789 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz !@#$%^&*()-_=+",
+        footer="FOOTER: End of Integrity Check."
     )
+
     
     # Load frequency configuration
     freq_config = load_freq_config("freq_bands.json")
     
-    clock_speed = 10  # Clock cycles per second.
+    clock_speed = 2  # Clock cycles per second.
     
     # Encode binaric file to WAV with Manchester clocking.
-    encode_binaric_file_to_wav(bin_file, clock_speed, freq_config, "binaric_transmission_with_manchester_clock.wav")
+    encode_binaric_file_to_wav(bin_file, clock_speed, freq_config, "binaric_transmission_with_manchester_clock_2.wav")

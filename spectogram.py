@@ -11,7 +11,7 @@ from matplotlib.widgets import Slider, CheckButtons
 # **Optimized FFT settings for the 10 Hz data rate**
 DATA_RATE = 10  # Hz
 FFTSIZE = 2048  # Larger for frequency resolution
-HOP_LEN = 100  # Match the data bit timing
+HOP_LEN = 2045  # Match the data bit timing
 
 def load_freq_config(json_file):
     """Loads frequency configuration from a JSON file."""
@@ -128,4 +128,4 @@ def analyze_wav(wav_file, json_file):
 
 # Example Usage
 if __name__ == "__main__":
-    analyze_wav("binaric_transmission_with_manchester_clock.wav", "freq_bands.json")
+    analyze_wav("binaric_transmission_with_manchester_clock_2.wav", "freq_bands.json")

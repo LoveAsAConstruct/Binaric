@@ -1,0 +1,15 @@
+{
+    "header": {
+      "file_name": "example.txt",
+      "file_size": 13,
+      "file_type": "text",
+      "content_base": 16,
+      "metadata": {
+        "version": "1.0",
+        "description": "Demo file for binaric transmission"
+      }
+    },
+    "content": "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 Hello World",
+    "footer": "End of demo transmission."
+  }
+  
